@@ -52,7 +52,7 @@ class PessoaFisica(Cliente):
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: ('{self.cpf}')>"
-
+    
 
 class Conta:
     def __init__(self, numero, cliente):
@@ -226,14 +226,14 @@ class Deposito(Transacao):
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
 
-
+#v1 --> add registro para o arquivo log.txt
+#infos --> cpf + horario + funcao
 def log_transacao(func):
     def envelope(*args, **kwargs):
         resultado = func(*args, **kwargs)
         data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        # TODO: alterar a implementação para salvar em arquivo.
-        # f"[{data_hora}] Função '{func.__name__}' executada com argumentos {args} e {kwargs}. Retornou {result}\n"
         print(f"{data_hora}: {func.__name__.upper()}")
+
         return resultado
 
     return envelope
