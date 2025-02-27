@@ -1,6 +1,8 @@
 
 """
 TODO:
+menu (csv sem dados) --> cadastro, sair
+
 menu inicial --> entrar, cadastro, sair
 
 menu (cpf já cadastro/sem contas) --> criar conta, sair
@@ -9,12 +11,14 @@ menu (cpf já cadastro/com contas) --> selecionar conta, criar conta, sair
 
 menu (pos selecionar conta) --> depositar, sacar, extrato, sair
 
-integrar banco de dados (csv mesmo) para armazenar --> clientes, contas, funcoes
+integrar banco de dados (csv mesmo) para armazenar --> clientes (csv), contas (csv), funcoes (log)
 """
 
 
 
 import textwrap
+import csv
+from pathlib import Path
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -276,6 +280,15 @@ class Historico:
 
 ##############################################################################################################################
 
+def menu_cadastro():
+    menu_cadastro = '''\n
+    ================ BEM VINDO! ================
+    [c] Cadastrar
+    [s] Sair
+    => '''
+
+    return input(menu_cadastro)
+
 def menu_inicial():
     menu_inicial = '''\n
     ================ MENU ================
@@ -431,9 +444,29 @@ def exibir_extrato(clientes):
 
 
 def main():
-    #fixme - dict para melhor eficiencia
-    clientes = []
-    contas = []
+    #dict {user1}: [conta1,conta2]}
+    dados = {}
+
+    ROOT_PATH = Path(__file__).parent
+    DADOS_PATH = ROOT_PATH / 'dados.csv'
+
+    #leitura de dados - clientes/contas
+    try:
+        with open(DADOS_PATH, mode='r', newline="",encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                dados.setdefault(row['usuario'], []).append(row['conta'])
+    except IOError:
+        print('Erro ao abrir o arquivo de dados.')
+
+    if not any(dados):
+        while True:
+            opcao = menu_cadastro()
+            match opcao:
+                case 'c':
+                    novo_cliente(clientes)
+                case 's':
+                    break
 
     while True:
         opcao = menu_inicial()
