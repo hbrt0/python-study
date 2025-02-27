@@ -2,16 +2,19 @@
 """
 TODO:
 menu (csv sem dados) --> cadastro, sair
-
 menu inicial --> entrar, cadastro, sair
-
 menu (cpf já cadastro/sem contas) --> criar conta, sair
-
 menu (cpf já cadastro/com contas) --> selecionar conta, criar conta, sair
-
 menu (pos selecionar conta) --> depositar, sacar, extrato, sair
 
-integrar banco de dados (csv mesmo) para armazenar --> clientes (csv), contas (csv), funcoes (log)
+integrar banco de dados (csv mesmo) para armazenar --> clientes (csv), contas (csv), funcoes (log) 
+
+operações direto no csv +memória -tempo
+
+
+FIXME:
+arrumar looping menus
+funcao de adicionar cliente csv
 """
 
 
@@ -329,27 +332,41 @@ def filtrar_cliente(cpf,clientes):
     clientes_filtrados = [cliente for cliente in clientes if cliente.cpf == cpf]
     return clientes_filtrados[0] if clientes_filtrados else None
 
-def verificar_cpf(clientes: list): #lista ja filtrada
-    if clientes:
+def verificar_cpf(dados: dict,cpf: str): #verify if cpf already exists
+    if cpf in dados.keys():
         print('\n! Já existe cliente com esse CPF !')
-        print(f'\n')
         return True
     return False
 
-def novo_cliente(clientes: list):
-    cpf = input('\nInforme o CPF: ')
-    cliente = filtrar_cliente(cpf,clientes)
+def novo_cliente(): #criar novo cliente
+    def add_cliente(cliente: PessoaFisica): #add no arquivo csv
+        ROOT_PATH = Path(__file__).parent
+        DADOS_PATH = ROOT_PATH / 'dados.csv'
 
-    if verificar_cpf(cliente):
+        try:
+            with open(DADOS_PATH, mode='a', newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow([cliente.cpf,""])
+        except IOError as e:
+            print(f"Erro ao abrir o arquivo de dados: {e}")
+
+    #leitura de dados
+    dados = leitura_de_dados()
+    print("================ CADASTRO DE CLIENTE ================")
+    cpf = input('CPF: ')
+    
+    # cpf verification
+    if verificar_cpf(dados,cpf):
         return
-
-    nome = input('Informe o nome: ')
-    data_nascimento = input('Informe a data de nascimento: ')
+    
+    nome = input('Nome: ')
+    data_nascimento = input('Data de Nascimento: ')
 
     cliente = PessoaFisica.criar_cliente_pf(nome=nome,data_nascimento=data_nascimento,cpf=cpf)
-    clientes.append(cliente)
 
     print('\n| Cliente criado com sucesso |')
+
+    
 
 def nova_conta(numero,clientes: list,contas: list):
     cpf = input('\nInforme o CPF do cliente: ')
@@ -442,15 +459,13 @@ def exibir_extrato(clientes):
     print(f"\nSaldo:\n\tR$ {conta.saldo:.2f}")
     print('=========================================')
 
-
-def main():
-    #dict {user1}: [conta1,conta2]}
+def leitura_de_dados():
     dados = {}
 
     ROOT_PATH = Path(__file__).parent
     DADOS_PATH = ROOT_PATH / 'dados.csv'
 
-    #leitura de dados - clientes/contas
+    #leitura de dados - clientes/contas - csv to dict
     try:
         with open(DADOS_PATH, mode='r', newline="",encoding="utf-8") as file:
             reader = csv.DictReader(file)
@@ -459,12 +474,16 @@ def main():
     except IOError:
         print('Erro ao abrir o arquivo de dados.')
 
-    if not any(dados):
+    return dados
+
+def main():
+    #menu PRIMEIRO ACESSO
+    if not any(leitura_de_dados()):
         while True:
             opcao = menu_cadastro()
             match opcao:
                 case 'c':
-                    novo_cliente(clientes)
+                    novo_cliente()
                 case 's':
                     break
 
