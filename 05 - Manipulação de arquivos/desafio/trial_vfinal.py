@@ -1,9 +1,10 @@
 
 """
 TODO:
-menu (csv sem dados) --> cadastro, sair
-menu inicial --> entrar, cadastro, sair
-menu (cpf já cadastro/sem contas) --> criar conta, sair
+menu inicial (s/cpf e s/conta) --> entrar, cadastro, sair
+menu (cpf s/conta) --> criar conta, sair
+
+menu login (cpf + conta) --> cpf, senha(ainda nao)
 menu (cpf já cadastro/com contas) --> selecionar conta, criar conta, sair
 menu (pos selecionar conta) --> depositar, sacar, extrato, sair
 
@@ -13,8 +14,9 @@ operações direto no csv +memória -tempo
 
 
 FIXME:
-arrumar looping menus
-funcao de adicionar cliente csv
+
+
+
 """
 
 
@@ -363,6 +365,7 @@ def novo_cliente(): #criar novo cliente
     data_nascimento = input('Data de Nascimento: ')
 
     cliente = PessoaFisica.criar_cliente_pf(nome=nome,data_nascimento=data_nascimento,cpf=cpf)
+    add_cliente(cliente)
 
     print('\n| Cliente criado com sucesso |')
 
@@ -478,20 +481,19 @@ def leitura_de_dados():
 
 def main():
     #menu PRIMEIRO ACESSO
-    if not any(leitura_de_dados()):
-        while True:
-            opcao = menu_cadastro()
-            match opcao:
-                case 'c':
-                    novo_cliente()
-                case 's':
-                    break
+    while not leitura_de_dados():
+        opcao = menu_cadastro()
+        match opcao:
+            case 'c':
+                novo_cliente()
+            case 's':
+                return
 
     while True:
         opcao = menu_inicial()
         match opcao:
             case 'e':
-                access, cpf = login(clientes)
+                access, cpf =
                 if access:
                     while True:
                         opcao = menu()
@@ -504,13 +506,13 @@ def main():
                                 exibir_extrato(clientes)
                             case 'nc':
                                 numero_conta = len(contas) + 1
-                                nova_conta(numero_conta,clientes,contas)
+                                nova_conta(numero_conta, clientes, contas)
                             case 'lc':
                                 listar_contas(contas)
                             case 'q':
                                 break              
             case 'c':
-                novo_cliente(clientes)
+                novo_cliente()
             case 'q':
                 break
 
