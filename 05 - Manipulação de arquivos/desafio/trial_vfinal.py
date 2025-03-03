@@ -143,7 +143,7 @@ class PessoaFisica(Cliente):
     def criar_cliente_pf(cls, nome, data_nascimento, cpf):
         return cls(nome, data_nascimento, cpf)
 
-    def salvar(self): #salva no csv
+    def salvar_cliente(self): #salva no csv
         ROOT_PATH = Path(__file__).parent
         DADOS_PATH = ROOT_PATH / 'dados.csv'
 
@@ -353,17 +353,6 @@ def verificar_cpf(dados: dict,cpf: str): #verify if cpf already exists
     return False
 
 def novo_cliente(): #criar novo cliente
-    def add_cliente(cliente: PessoaFisica): #add no arquivo csv
-        ROOT_PATH = Path(__file__).parent
-        DADOS_PATH = ROOT_PATH / 'dados.csv'
-
-        try:
-            with open(DADOS_PATH, mode='a', newline="", encoding="utf-8") as file:
-                writer = csv.writer(file)
-                writer.writerow([cliente.nome,""])
-        except IOError as e:
-            print(f"Erro ao abrir o arquivo de dados: {e}")
-
     #leitura de dados
     dados = leitura_de_dados()
     print("================ CADASTRO DE CLIENTE ================")
@@ -377,8 +366,7 @@ def novo_cliente(): #criar novo cliente
     data_nascimento = input('Data de Nascimento: ')
 
     cliente = PessoaFisica.criar_cliente_pf(nome=nome,data_nascimento=data_nascimento,cpf=cpf)
-    atributos(cliente)
-    add_cliente(cliente)
+    cliente.salvar_cliente()
 
     print('\n| Cliente criado com sucesso |')
 
@@ -487,6 +475,14 @@ def leitura_de_dados(): #ler dados do csv -- retorna um dict
             reader = csv.DictReader(file)
             for row in reader:
                 # dados.setdefault(row['usuario'], []).append(row['conta'])
+                cpf, nome, data_nascimento, contas, indice_conta = row['cpf'], row['nome'], row['data_nascimento'], row['contas'], row['indice_conta']
+                dados = {
+                    'cpf': cpf,
+                    'nome': nome,
+                    'data_nascimento': data_nascimento,
+                    'contas': contas,
+                    'indice_conta': indice_conta
+                    }
 
     except IOError:
         print('Erro ao abrir o arquivo de dados.')
