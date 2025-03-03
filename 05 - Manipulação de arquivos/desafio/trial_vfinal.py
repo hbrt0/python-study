@@ -12,6 +12,7 @@ integrar banco de dados (csv mesmo) para armazenar --> clientes (csv), contas (c
 
 operações direto no csv +memória -tempo
 
+fazer todo registro no csv
 
 FIXME:
 
@@ -348,7 +349,7 @@ def novo_cliente(): #criar novo cliente
         try:
             with open(DADOS_PATH, mode='a', newline="", encoding="utf-8") as file:
                 writer = csv.writer(file)
-                writer.writerow([cliente.cpf,""])
+                writer.writerow([cliente.nome,""])
         except IOError as e:
             print(f"Erro ao abrir o arquivo de dados: {e}")
 
@@ -365,6 +366,7 @@ def novo_cliente(): #criar novo cliente
     data_nascimento = input('Data de Nascimento: ')
 
     cliente = PessoaFisica.criar_cliente_pf(nome=nome,data_nascimento=data_nascimento,cpf=cpf)
+    atributos(cliente)
     add_cliente(cliente)
 
     print('\n| Cliente criado com sucesso |')
@@ -479,6 +481,11 @@ def leitura_de_dados():
 
     return dados
 
+def atributos(obj):
+    atributos = vars(obj)
+    for atributos, valor in atributos.items():
+        print(f'{atributos}: {valor}')
+
 def main():
     #menu PRIMEIRO ACESSO
     while not leitura_de_dados():
@@ -488,13 +495,13 @@ def main():
                 novo_cliente()
             case 's':
                 return
-
+    #menu para CPF CADASTRADO + s/ conta
     while True:
         opcao = menu_inicial()
         match opcao:
             case 'e':
-                access, cpf =
-                if access:
+                # access, cpf =
+                # if access:
                     while True:
                         opcao = menu()
                         match opcao:
