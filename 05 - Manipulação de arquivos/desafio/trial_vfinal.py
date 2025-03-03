@@ -142,6 +142,17 @@ class PessoaFisica(Cliente):
     @log_funcoes
     def criar_cliente_pf(cls, nome, data_nascimento, cpf):
         return cls(nome, data_nascimento, cpf)
+
+    def salvar(self): #salva no csv
+        ROOT_PATH = Path(__file__).parent
+        DADOS_PATH = ROOT_PATH / 'dados.csv'
+
+        try:
+            with open(DADOS_PATH, mode='a', newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow([self.cpf, self.nome, self.data_nascimento, self.contas, self.indice_conta])
+        except IOError as e:
+            print(f"Erro ao abrir o arquivo de dados: {e}")
     
 #CONTA
 class Conta():
@@ -464,7 +475,7 @@ def exibir_extrato(clientes):
     print(f"\nSaldo:\n\tR$ {conta.saldo:.2f}")
     print('=========================================')
 
-def leitura_de_dados():
+def leitura_de_dados(): #ler dados do csv -- retorna um dict
     dados = {}
 
     ROOT_PATH = Path(__file__).parent
@@ -475,7 +486,8 @@ def leitura_de_dados():
         with open(DADOS_PATH, mode='r', newline="",encoding="utf-8") as file:
             reader = csv.DictReader(file)
             for row in reader:
-                dados.setdefault(row['usuario'], []).append(row['conta'])
+                # dados.setdefault(row['usuario'], []).append(row['conta'])
+
     except IOError:
         print('Erro ao abrir o arquivo de dados.')
 
