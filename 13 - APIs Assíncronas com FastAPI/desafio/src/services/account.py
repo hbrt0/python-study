@@ -11,7 +11,9 @@ class AccountService:
         return await database.fetch_all(query)
 
     async def create(self, account: AccountIn) -> Record:
-        command = accounts.insert().values(user_id=account.user_id, balance=account.balance)
+        command = accounts.insert().values(
+            user_id=account.user_id, balance=account.balance
+        )
         account_id = await database.execute(command)
 
         query = accounts.select().where(accounts.c.id == account_id)

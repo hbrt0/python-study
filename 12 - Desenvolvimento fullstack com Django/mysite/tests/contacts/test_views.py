@@ -38,7 +38,9 @@ def test_contact_create_success(client, django_user_model):
         "sender": "sender@testemail.com",
         "cc_myself": True,
     }
-    user = django_user_model.objects.create_user(username="john", email="john@testmail.com", password="123mudar")
+    user = django_user_model.objects.create_user(
+        username="john", email="john@testmail.com", password="123mudar"
+    )
     permission = Permission.objects.get(codename="add_contact")
     user.user_permissions.add(permission)
 

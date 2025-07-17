@@ -11,7 +11,9 @@ async def populate_posts(db):
     service = PostService()
     await service.create(PostIn(title="post 1", content="some content", published=True))
     await service.create(PostIn(title="post 2", content="some content", published=True))
-    await service.create(PostIn(title="post 3", content="some content", published=False))
+    await service.create(
+        PostIn(title="post 3", content="some content", published=False)
+    )
 
 
 async def test_delete_post_success(client: AsyncClient, access_token: str):

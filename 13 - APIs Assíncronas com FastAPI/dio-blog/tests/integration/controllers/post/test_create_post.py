@@ -5,7 +5,12 @@ from httpx import AsyncClient
 async def test_create_post_success(client: AsyncClient, access_token: str):
     # Given
     headers = {"Authorization": f"Bearer {access_token}"}
-    data = {"title": "post 1", "content": "some content", "published_at": "2024-04-12T04:33:14.403Z", "published": True}
+    data = {
+        "title": "post 1",
+        "content": "some content",
+        "published_at": "2024-04-12T04:33:14.403Z",
+        "published": True,
+    }
 
     # When
     response = await client.post("/posts/", json=data, headers=headers)
@@ -20,7 +25,11 @@ async def test_create_post_success(client: AsyncClient, access_token: str):
 async def test_create_post_invalid_payload_fail(client: AsyncClient, access_token: str):
     # Given
     headers = {"Authorization": f"Bearer {access_token}"}
-    data = {"content": "some content", "published_at": "2024-04-12T04:33:14.403Z", "published": True}
+    data = {
+        "content": "some content",
+        "published_at": "2024-04-12T04:33:14.403Z",
+        "published": True,
+    }
 
     # When
     response = await client.post("/posts/", json=data, headers=headers)
@@ -34,7 +43,11 @@ async def test_create_post_invalid_payload_fail(client: AsyncClient, access_toke
 
 async def test_create_post_not_authenticated_fail(client: AsyncClient):
     # Given
-    data = {"content": "some content", "published_at": "2024-04-12T04:33:14.403Z", "published": True}
+    data = {
+        "content": "some content",
+        "published_at": "2024-04-12T04:33:14.403Z",
+        "published": True,
+    }
 
     # When
     response = await client.post("/posts/", json=data, headers={})

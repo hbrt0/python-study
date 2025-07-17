@@ -8,7 +8,11 @@ class UserService:
         create_user_schema = CreateUserSchema()
         data = create_user_schema.load(user_data)
 
-        user = User(name=data["name"], password=bcrypt.generate_password_hash(data["password"]), email=data["email"])
+        user = User(
+            name=data["name"],
+            password=bcrypt.generate_password_hash(data["password"]),
+            email=data["email"],
+        )
         db.session.add(user)
         db.session.commit()
 

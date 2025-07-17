@@ -26,4 +26,6 @@ elif conta_especial:
     print("Conta especial selecionada!")
 
 else:
-    print("Sistema não reconheceu seu tipo de conta, entre em contato com o seu gerente.")
+    print(
+        "Sistema não reconheceu seu tipo de conta, entre em contato com o seu gerente."
+    )

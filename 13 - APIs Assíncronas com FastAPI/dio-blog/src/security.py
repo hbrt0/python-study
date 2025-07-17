@@ -42,7 +42,9 @@ def sign_jwt(user_id: int) -> JWTToken:
 
 async def decode_jwt(token: str) -> JWTToken | None:
     try:
-        decoded_token = jwt.decode(token, SECRET, audience="curso-fastapi", algorithms=[ALGORITHM])
+        decoded_token = jwt.decode(
+            token, SECRET, audience="curso-fastapi", algorithms=[ALGORITHM]
+        )
         _token = JWTToken.model_validate({"access_token": decoded_token})
         return _token if _token.access_token.exp >= time.time() else None
     except Exception:
@@ -59,21 +61,34 @@ class JWTBearer(HTTPBearer):
 
         if credentials:
             if not scheme == "Bearer":
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication scheme.")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid authentication scheme.",
+                )
 
             payload = await decode_jwt(credentials)
             if not payload:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token.")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired token.",
+                )
             return payload
         else:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization code.")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authorization code.",
+            )
 
 
-async def get_current_user(token: Annotated[JWTToken, Depends(JWTBearer())]) -> dict[str, int]:
+async def get_current_user(
+    token: Annotated[JWTToken, Depends(JWTBearer())]
+) -> dict[str, int]:
     return {"user_id": token.access_token.sub}
 
 
 def login_required(current_user: Annotated[dict[str, int], Depends(get_current_user)]):
     if not current_user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+        )
     return current_user

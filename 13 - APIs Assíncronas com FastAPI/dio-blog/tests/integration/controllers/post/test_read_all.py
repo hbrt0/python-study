@@ -12,11 +12,15 @@ async def populate_posts(db):
     service = PostService()
     await service.create(PostIn(title="post 1", content="some content", published=True))
     await service.create(PostIn(title="post 2", content="some content", published=True))
-    await service.create(PostIn(title="post 3", content="some content", published=False))
+    await service.create(
+        PostIn(title="post 3", content="some content", published=False)
+    )
 
 
 @pytest.mark.parametrize("published,total", [("on", 2), ("off", 1)])
-async def test_read_posts_by_status_success(client: AsyncClient, access_token: str, published: str, total: int):
+async def test_read_posts_by_status_success(
+    client: AsyncClient, access_token: str, published: str, total: int
+):
     # Given
     params = {"published": published, "limit": 10}
     headers = {"Authorization": f"Bearer {access_token}"}

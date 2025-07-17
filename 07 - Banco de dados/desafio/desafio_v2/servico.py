@@ -9,9 +9,14 @@ class ClienteServico:
 
     def filtrar_cliente(self, documento: str) -> int:
         if len(documento) == 11:
-            self.cursor.execute("SELECT COUNT(*) AS total FROM pessoa_fisica WHERE cpf=?;", (documento,))
+            self.cursor.execute(
+                "SELECT COUNT(*) AS total FROM pessoa_fisica WHERE cpf=?;", (documento,)
+            )
         else:
-            self.cursor.execute("SELECT COUNT(*) AS total FROM pessoa_juridica WHERE cnpj=?;", (documento,))
+            self.cursor.execute(
+                "SELECT COUNT(*) AS total FROM pessoa_juridica WHERE cnpj=?;",
+                (documento,),
+            )
         return self.cursor.fetchone()["total"]
 
     def _criar_cliente_pessoa_fisica(self, documento: str) -> PessoaFisica:
@@ -21,7 +26,12 @@ class ClienteServico:
         telefone = input("Informe seu telefone: ")
 
         return PessoaFisica(
-            nome=nome, cpf=documento, renda_mensal=renda_mensal, email=email, telefone=telefone, status="ativo"
+            nome=nome,
+            cpf=documento,
+            renda_mensal=renda_mensal,
+            email=email,
+            telefone=telefone,
+            status="ativo",
         )
 
     def _criar_cliente_pessoa_juridica(self, documento: str) -> PessoaJuridica:
@@ -66,15 +76,24 @@ class ClienteServico:
             cliente_id = self._criar_cliente(cliente=cliente)
             self.cursor.execute(
                 "INSERT INTO pessoa_juridica (cliente_id, nome_fantasia, cnpj, faturamento_anual) VALUES (?,?,?,?)",
-                (cliente_id, cliente.nome_fantasia, cliente.cnpj, cliente.faturamento_anual),
+                (
+                    cliente_id,
+                    cliente.nome_fantasia,
+                    cliente.cnpj,
+                    cliente.faturamento_anual,
+                ),
             )
 
         print("\n=== Cliente criado com sucesso! ===")
 
     def listar_clientes(self) -> None:
-        self.cursor.execute("SELECT * FROM pessoa_fisica pf INNER JOIN cliente c ON c.id = pf.cliente_id;")
+        self.cursor.execute(
+            "SELECT * FROM pessoa_fisica pf INNER JOIN cliente c ON c.id = pf.cliente_id;"
+        )
         clientes = self.cursor.fetchall()
-        self.cursor.execute("SELECT * FROM pessoa_juridica pj INNER JOIN cliente c ON c.id = pj.cliente_id;")
+        self.cursor.execute(
+            "SELECT * FROM pessoa_juridica pj INNER JOIN cliente c ON c.id = pj.cliente_id;"
+        )
         clientes += self.cursor.fetchall()
 
         if not clientes:

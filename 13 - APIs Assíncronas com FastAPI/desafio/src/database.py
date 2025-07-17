@@ -9,4 +9,6 @@ metadata = sa.MetaData()
 if settings.environment == "production":
     engine = sa.create_engine(settings.database_url)
 else:
-    engine = sa.create_engine(settings.database_url, connect_args={"check_same_thread": False})
+    engine = sa.create_engine(
+        settings.database_url, connect_args={"check_same_thread": False}
+    )

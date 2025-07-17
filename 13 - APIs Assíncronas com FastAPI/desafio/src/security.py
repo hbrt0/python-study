@@ -42,7 +42,9 @@ def sign_jwt(user_id: int) -> JWTToken:
 
 async def decode_jwt(token: str) -> JWTToken | None:
     try:
-        decoded_token = jwt.decode(token, SECRET, audience="desafio-bank", algorithms=[ALGORITHM])
+        decoded_token = jwt.decode(
+            token, SECRET, audience="desafio-bank", algorithms=[ALGORITHM]
+        )
         _token = JWTToken.model_validate({"access_token": decoded_token})
         return _token if _token.access_token.exp >= time.time() else None
     except Exception:
@@ -86,5 +88,7 @@ async def get_current_user(
 
 def login_required(current_user: Annotated[dict[str, int], Depends(get_current_user)]):
     if not current_user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+        )
     return current_user

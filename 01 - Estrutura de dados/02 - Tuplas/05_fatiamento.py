@@ -1,4 +1,11 @@
-tupla = ("p", "y", "t", "h", "o", "n",)
+tupla = (
+    "p",
+    "y",
+    "t",
+    "h",
+    "o",
+    "n",
+)
 
 print(tupla[2:])  # ("t", "h", "o", "n")
 print(tupla[:2])  # ("p", "y")

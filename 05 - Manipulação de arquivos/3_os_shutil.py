@@ -13,7 +13,7 @@ arquivo = open(ROOT_PATH / "novo.txt", "w")
 arquivo.close()
 
 # Rename the file "novo.txt" to "alterado.txt"
-os.rename(ROOT_PATH / "novo.txt", ROOT_PATH / "alterado.txt") 
+os.rename(ROOT_PATH / "novo.txt", ROOT_PATH / "alterado.txt")
 
 # Remove the file "alterado.txt"
 os.remove(ROOT_PATH / "alterado.txt")

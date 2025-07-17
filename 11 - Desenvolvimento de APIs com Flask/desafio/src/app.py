@@ -48,7 +48,12 @@ def create_app(environment=os.environ["ENVIRONMENT"]):
 
     @app.route("/docs")
     def docs():
-        return spec.path(view=user.create_user).path(view=user.list_users).path(view=account.create_account).to_dict()
+        return (
+            spec.path(view=user.create_user)
+            .path(view=user.list_users)
+            .path(view=account.create_account)
+            .to_dict()
+        )
 
     @app.errorhandler(IntegrityError)
     def handle_integrity_exception(e):

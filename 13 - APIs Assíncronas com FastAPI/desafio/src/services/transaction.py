@@ -8,8 +8,15 @@ from src.schemas.transaction import TransactionIn
 
 
 class TransactionService:
-    async def read_all(self, account_id: int, limit: int, skip: int = 0) -> list[Record]:
-        query = transactions.select().where(transactions.c.account_id == account_id).limit(limit).offset(skip)
+    async def read_all(
+        self, account_id: int, limit: int, skip: int = 0
+    ) -> list[Record]:
+        query = (
+            transactions.select()
+            .where(transactions.c.account_id == account_id)
+            .limit(limit)
+            .offset(skip)
+        )
         return await database.fetch_all(query)
 
     @database.transaction()
@@ -35,7 +42,9 @@ class TransactionService:
         return await database.fetch_one(query)
 
     async def __update_account_balance(self, account_id: int, balance: float) -> None:
-        command = accounts.update().where(accounts.c.id == account_id).values(balance=balance)
+        command = (
+            accounts.update().where(accounts.c.id == account_id).values(balance=balance)
+        )
         await database.execute(command)
 
     async def __register_transaction(self, transaction: TransactionIn) -> int:

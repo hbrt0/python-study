@@ -17,7 +17,12 @@ class ClienteServico:
         telefone = input("Informe seu telefone: ")
 
         return PessoaFisica(
-            nome=nome, cpf=documento, renda_mensal=renda_mensal, email=email, telefone=telefone, status="ativo"
+            nome=nome,
+            cpf=documento,
+            renda_mensal=renda_mensal,
+            email=email,
+            telefone=telefone,
+            status="ativo",
         )
 
     def _criar_cliente_pessoa_juridica(self, documento: str) -> PessoaJuridica:

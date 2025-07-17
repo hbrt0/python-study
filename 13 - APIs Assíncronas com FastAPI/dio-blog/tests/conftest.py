@@ -35,7 +35,9 @@ async def client(db):
         "Accept": "application/json",
         "Content-Type": "application/json",
     }
-    async with AsyncClient(base_url="http://test", transport=transport, headers=headers) as client:
+    async with AsyncClient(
+        base_url="http://test", transport=transport, headers=headers
+    ) as client:
         yield client
 
 

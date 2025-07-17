@@ -37,7 +37,7 @@ try:
 except IOError as exc:
     print(f"Erro ao criar o arquivo. {exc}")
 
-#EFICIENTE
+# EFICIENTE
 # Tenta abrir o arquivo "usuarios.csv" para leitura usando DictReader
 try:
     with open(ROOT_PATH / "usuarios.csv", newline="") as csvfile:
