@@ -1,2 +1,3 @@
-cpf;nome;data_nascimento;contas;indice_conta
+cpf,nome,data_nascimento,contas,indice_conta
 
+4,h,4,[],0

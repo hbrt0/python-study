@@ -1,4 +1,3 @@
-
 """
 TODO:
 menu inicial (s/cpf e s/conta) --> entrar, cadastro, sair
@@ -7,12 +6,12 @@ menu (cpf s/conta) --> criar conta, sair
 menu login (cpf + conta) --> cpf, senha(ainda nao)
 menu (cpf já cadastro/com contas) --> selecionar conta, criar conta, sair
 menu (pos selecionar conta) --> depositar, sacar, extrato, sair
-
 integrar banco de dados (csv mesmo) para armazenar --> clientes (csv), contas (csv), funcoes (log) 
-
 operações direto no csv +memória -tempo
-
 fazer todo registro no csv
+
+SALVAR SALDO DAS CONTAS NO CSV
+
 
 FIXME:
 
@@ -29,14 +28,15 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 def log_funcoes(func):
-    def wrapper(*args,**kwargs):
+    def wrapper(*args, **kwargs):
+        cpf = "N/A"  # Valor padrão para CPF
         if 'cpf' in kwargs:
             cpf = kwargs['cpf']
         elif 'cliente' in kwargs:
             cpf = kwargs['cliente'].cpf
-        elif 'clientes' in kwargs:
+        elif 'clientes' in kwargs and kwargs['clientes']:
             cpf = kwargs['clientes'][0].cpf
-        resultado = func(*args,**kwargs)
+        resultado = func(*args, **kwargs)
         print(f"\n{datetime.now().strftime('%d-%m-%Y %H:%M:%S')} | {func.__name__.upper()} | CPF: {cpf}")
         return resultado
     return wrapper
@@ -143,17 +143,20 @@ class PessoaFisica(Cliente):
     def criar_cliente_pf(cls, nome, data_nascimento, cpf):
         return cls(nome, data_nascimento, cpf)
 
-    def salvar_cliente(self): #salva no csv
+    def salvar_cliente(self):  # salva no csv
         ROOT_PATH = Path(__file__).parent
         DADOS_PATH = ROOT_PATH / 'dados.csv'
 
         try:
+            write_header = not DADOS_PATH.exists() or DADOS_PATH.stat().st_size == 0
             with open(DADOS_PATH, mode='a', newline="", encoding="utf-8") as file:
                 writer = csv.writer(file)
+                if write_header:
+                    writer.writerow(["cpf", "nome", "data_nascimento", "contas", "indice_conta"])
                 writer.writerow([self.cpf, self.nome, self.data_nascimento, self.contas, self.indice_conta])
         except IOError as e:
             print(f"Erro ao abrir o arquivo de dados: {e}")
-    
+
 #CONTA
 class Conta():
     def __init__(self,numero,cliente):
@@ -352,37 +355,39 @@ def verificar_cpf(dados: dict,cpf: str): #verify if cpf already exists
         return True
     return False
 
-def novo_cliente(): #criar novo cliente
-    #leitura de dados
-    dados = leitura_de_dados()
+def novo_cliente():  # Criar novo cliente
+    # Carregar os dados dos clientes
+    clientes, _ = leitura_de_dados()  # Ignorar a lista de contas
     print("================ CADASTRO DE CLIENTE ================")
     cpf = input('CPF: ')
-    
-    # cpf verification
-    if verificar_cpf(dados,cpf):
+
+    # Verificar se o CPF já está cadastrado
+    if any(cliente.cpf == cpf for cliente in clientes):
+        print('\n! Já existe cliente com esse CPF !')
         return
-    
+
     nome = input('Nome: ')
     data_nascimento = input('Data de Nascimento: ')
 
-    cliente = PessoaFisica.criar_cliente_pf(nome=nome,data_nascimento=data_nascimento,cpf=cpf)
+    cliente = PessoaFisica.criar_cliente_pf(nome=nome, data_nascimento=data_nascimento, cpf=cpf)
     cliente.salvar_cliente()
 
     print('\n| Cliente criado com sucesso |')
 
-    
-
-def nova_conta(numero,clientes: list,contas: list):
+def nova_conta(numero, clientes: list, contas: list):
     cpf = input('\nInforme o CPF do cliente: ')
-    cliente = filtrar_cliente(cpf,clientes)
+    cliente = filtrar_cliente(cpf, clientes)
 
     if not cliente:
         print('\n! Cliente não encontrado, fluxo de criação de conta encerrado !')
         return
-    
-    conta = ContaCorrente.criar_conta(cliente=cliente,numero=numero)
+
+    conta = ContaCorrente.criar_conta(cliente=cliente, numero=numero)
     contas.append(conta)
     cliente.contas.append(conta)
+
+    # Salvar a conta no arquivo CSV
+    salvar_conta(conta)
 
     print(f'\n| Conta criada com sucesso |\n{conta}')
 
@@ -463,31 +468,55 @@ def exibir_extrato(clientes):
     print(f"\nSaldo:\n\tR$ {conta.saldo:.2f}")
     print('=========================================')
 
-def leitura_de_dados(): #ler dados do csv -- retorna um dict
-    dados = {}
+def leitura_de_dados():
+    clientes = []
+    contas = []
 
     ROOT_PATH = Path(__file__).parent
     DADOS_PATH = ROOT_PATH / 'dados.csv'
+    CONTAS_PATH = ROOT_PATH / 'contas.csv'
 
-    #leitura de dados - clientes/contas - csv to dict
+    # Leitura de dados dos clientes
     try:
-        with open(DADOS_PATH, mode='r', newline="",encoding="utf-8") as file:
+        with open(DADOS_PATH, mode='r', newline="", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             for row in reader:
-                # dados.setdefault(row['usuario'], []).append(row['conta'])
-                cpf, nome, data_nascimento, contas, indice_conta = row['cpf'], row['nome'], row['data_nascimento'], row['contas'], row['indice_conta']
-                dados = {
-                    'cpf': cpf,
-                    'nome': nome,
-                    'data_nascimento': data_nascimento,
-                    'contas': contas,
-                    'indice_conta': indice_conta
-                    }
-
+                nome, data_nascimento, cpf = row['nome'], row['data_nascimento'], row['cpf']
+                cliente = PessoaFisica(nome, data_nascimento, cpf)
+                clientes.append(cliente)
     except IOError:
-        print('Erro ao abrir o arquivo de dados.')
+        print('Erro ao abrir o arquivo de dados dos clientes.')
 
-    return dados
+    # Leitura de dados das contas
+    try:
+        with open(CONTAS_PATH, mode='r', newline="", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                numero, cpf, saldo, limite, limite_transacao = row['numero'], row['cpf'], row['saldo'], row['limite'], row['limite_transacao']
+                cliente = next((c for c in clientes if c.cpf == cpf), None)
+                if cliente:
+                    conta = ContaCorrente(numero, cliente, float(limite), int(limite_transacao))
+                    conta.saldo = float(saldo)
+                    cliente.contas.append(conta)
+                    contas.append(conta)
+    except IOError:
+        print('Erro ao abrir o arquivo de dados das contas.')
+
+    return clientes, contas
+
+def salvar_conta(conta: ContaCorrente):
+    ROOT_PATH = Path(__file__).parent
+    CONTAS_PATH = ROOT_PATH / 'contas.csv'
+
+    try:
+        write_header = not CONTAS_PATH.exists() or CONTAS_PATH.stat().st_size == 0
+        with open(CONTAS_PATH, mode='a', newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            if write_header:
+                writer.writerow(["numero", "cpf", "saldo", "limite", "limite_transacao"])
+            writer.writerow([conta.numero, conta.cliente.cpf, conta.saldo, conta.limite, conta.limite_transacao])
+    except IOError as e:
+        print(f"Erro ao abrir o arquivo de contas: {e}")
 
 def atributos(obj):
     atributos = vars(obj)
@@ -495,21 +524,27 @@ def atributos(obj):
         print(f'{atributos}: {valor}')
 
 def main():
-    #menu PRIMEIRO ACESSO
-    while not leitura_de_dados():
+    # Carregar os dados do CSV
+    clientes, contas = leitura_de_dados()
+
+    # Menu PRIMEIRO ACESSO
+    while not clientes:
         opcao = menu_cadastro()
         match opcao:
             case 'c':
                 novo_cliente()
+                # Atualizar os dados após o cadastro
+                clientes, contas = leitura_de_dados()
             case 's':
                 return
-    #menu para CPF CADASTRADO + s/ conta
+
+    # Menu para CPF CADASTRADO + s/ conta
     while True:
         opcao = menu_inicial()
         match opcao:
             case 'e':
-                # access, cpf =
-                # if access:
+                access, cpf = login(clientes)
+                if access:
                     while True:
                         opcao = menu()
                         match opcao:
@@ -522,12 +557,16 @@ def main():
                             case 'nc':
                                 numero_conta = len(contas) + 1
                                 nova_conta(numero_conta, clientes, contas)
+                                # Atualizar os dados após a criação da conta
+                                clientes, contas = leitura_de_dados()
                             case 'lc':
                                 listar_contas(contas)
                             case 'q':
-                                break              
+                                break
             case 'c':
                 novo_cliente()
+                # Atualizar os dados após o cadastro
+                clientes, contas = leitura_de_dados()
             case 'q':
                 break
 
