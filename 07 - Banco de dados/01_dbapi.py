@@ -4,6 +4,7 @@ from pathlib import Path
 # rootpath for the database file
 # This assumes the script is located in the same directory as the database file
 ROOT_PATH = Path(__file__).parent
+
 # Connect to the SQLite database
 # If the database file does not exist, it will be created
 conexao = sqlite3.connect(ROOT_PATH / "data_base.db")
@@ -14,10 +15,20 @@ cursor = conexao.cursor()
 
 cursor.row_factory = sqlite3.Row  # This allows us to access columns by name
 
-#create a table if it does not exist
+#CREATE a table if it does not exist
 cursor.execute(
-    "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(100), email VARCHAR(150))"
+    "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(100), status VARCHAR(150))"
 )
+
+#INSERT a record into the table
+cursor.execute("INSERT INTO clientes (nome, status) VALUES (?,?);", ("Heloisa", "gatinha"))
+
+# Commit the changes to the database
+conexao.commit()
+
+#update a record in the table
+cursor.execute("UPDATE clientes SET status=? WHERE id=?;", ("Gatinha", 1))
+conexao.commit()
 
 # def criar_tabela(conexao, cursor):
 #     cursor.execute(
