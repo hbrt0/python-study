@@ -12,7 +12,6 @@ conexao = sqlite3.connect(ROOT_PATH / "data_base.db")
 # Create a cursor object using the connection
 # The cursor is used to execute SQL commands
 cursor = conexao.cursor()
-
 cursor.row_factory = sqlite3.Row  # This allows us to access columns by name
 
 #CREATE a table if it does not exist
@@ -20,15 +19,37 @@ cursor.execute(
     "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(100), status VARCHAR(150))"
 )
 
+#clear the table
+cursor.execute("DELETE FROM clientes;")
+conexao.commit()
+# reset the auto-incrementing id
+cursor.execute("DELETE FROM sqlite_sequence WHERE name='clientes';")
+
 #INSERT a record into the table
 cursor.execute("INSERT INTO clientes (nome, status) VALUES (?,?);", ("Heloisa", "gatinha"))
+#or
+#data = ("Heloisa", "gatinha")
+#cursor.execute("INSERT INTO clientes (nome, status) VALUES (?,?);", data)
 
 # Commit the changes to the database
+conexao.commit()
+
+data = ('Artorias','the Abysswalker')
+data2 = ('Gwyn', 'Lord of Cinder')
+
+#INSERT multiple records into the table
+cursor.executemany("INSERT INTO clientes (nome, status) VALUES (?, ?);", [data, data2])
 conexao.commit()
 
 #update a record in the table
 cursor.execute("UPDATE clientes SET status=? WHERE id=?;", ("Gatinha", 1))
 conexao.commit()
+
+#delete a record from the table
+cursor.execute("DELETE FROM clientes WHERE id=?;", (2,))
+conexao.commit()
+
+
 
 # def criar_tabela(conexao, cursor):
 #     cursor.execute(
