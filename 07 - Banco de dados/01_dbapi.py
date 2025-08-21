@@ -14,41 +14,64 @@ conexao = sqlite3.connect(ROOT_PATH / "data_base.db")
 cursor = conexao.cursor()
 cursor.row_factory = sqlite3.Row  # This allows us to access columns by name
 
-#CREATE a table if it does not exist
-cursor.execute(
-    "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(100), status VARCHAR(150))"
-)
+def criar_tabela(cursor):
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(100), status VARCHAR(150))"
+    )
+criar_tabela(cursor)
 
-#clear the table
-cursor.execute("DELETE FROM clientes;")
-conexao.commit()
-# reset the auto-incrementing id
-cursor.execute("DELETE FROM sqlite_sequence WHERE name='clientes';")
+def limpar_tabela(cursor, conexao):
+    # Clear the table
+    cursor.execute("DELETE FROM clientes;")
+    conexao.commit()
+    # Reset the auto-incrementing id
+    cursor.execute("DELETE FROM sqlite_sequence WHERE name='clientes';")
+    conexao.commit()
+limpar_tabela(cursor, conexao)
 
-#INSERT a record into the table
-cursor.execute("INSERT INTO clientes (nome, status) VALUES (?,?);", ("Heloisa", "gatinha"))
-#or
-#data = ("Heloisa", "gatinha")
-#cursor.execute("INSERT INTO clientes (nome, status) VALUES (?,?);", data)
+def inserir(cursor, conexao, *args):
+    # Permite inserir um único cliente (nome, status) ou vários clientes [(nome, status), ...]
+    if len(args) == 1 and isinstance(args[0], list):
+        # Lista de tuplas [(nome, status), ...]
+        cursor.executemany("INSERT INTO clientes (nome, status) VALUES (?, ?);", args[0])
+    else:
+        # Inserção única
+        cursor.execute("INSERT INTO clientes (nome, status) VALUES (?, ?);", args)
+    conexao.commit()
+data = ('Heloisa','gatinha')
+inserir(cursor, conexao, [data])
+inserir(cursor, conexao, [data])
 
-# Commit the changes to the database
-conexao.commit()
+data2 = ('Artorias','the Abysswalker')
+data3 = ('Gwyn', 'Lord of Cinder')
 
-data = ('Artorias','the Abysswalker')
-data2 = ('Gwyn', 'Lord of Cinder')
+inserir(cursor, conexao, [data2, data3])
 
-#INSERT multiple records into the table
-cursor.executemany("INSERT INTO clientes (nome, status) VALUES (?, ?);", [data, data2])
-conexao.commit()
+def update_status(cursor, conexao, novo_status, id):
+    cursor.execute("UPDATE clientes SET status=? WHERE id=?;", (novo_status, id))
+    conexao.commit()
+update_status(cursor, conexao, "Gatinha", 1)
 
-#update a record in the table
-cursor.execute("UPDATE clientes SET status=? WHERE id=?;", ("Gatinha", 1))
-conexao.commit()
+def remove(cursor, conexao, id):
+    #delete
+    cursor.execute("DELETE FROM clientes WHERE id=?;", (id,))
+    #isnt ideal update the ids of the remaining records
+    #update the ids of the remaining records
+    cursor.execute("UPDATE clientes SET id = id - 1 WHERE id > ?;", (id,))
+    #update the auto-increment sequence
+    cursor.execute("SELECT seq FROM sqlite_sequence WHERE name='clientes';")
+    resultado = cursor.fetchone()
+    if resultado:
+        cursor.execute("UPDATE sqlite_sequence SET seq = seq - 1 WHERE name='clientes';")
+    conexao.commit()
+remove(cursor, conexao, 2)
 
-#delete a record from the table
-cursor.execute("DELETE FROM clientes WHERE id=?;", (2,))
-conexao.commit()
-
+def listar(cursor):
+    cursor.execute("SELECT * FROM clientes;")
+    return cursor.fetchall()
+clientes = listar(cursor)
+for cliente in clientes:
+    print(dict(cliente))
 
 
 # def criar_tabela(conexao, cursor):
@@ -86,11 +109,11 @@ conexao.commit()
 #     return cursor.fetchone()
 
 
-# def listar_clientes(cursor):
+# def listar(cursor):
 #     return cursor.execute("SELECT * FROM clientes ORDER BY nome DESC;")
 
 
-# clientes = listar_clientes(cursor)
+# clientes = listar(cursor)
 # for cliente in clientes:
 #     print(dict(cliente))
 
