@@ -44,8 +44,10 @@ inserir(cursor, conexao, [data])
 
 data2 = ('Artorias','the Abysswalker')
 data3 = ('Gwyn', 'Lord of Cinder')
-
 inserir(cursor, conexao, [data2, data3])
+
+data4 = [('Smough', 'the Butcher'), ('Ornstein', 'the Dragonslayer')]
+inserir(cursor, conexao, data4)
 
 def update_status(cursor, conexao, novo_status, id):
     cursor.execute("UPDATE clientes SET status=? WHERE id=?;", (novo_status, id))
@@ -55,7 +57,7 @@ update_status(cursor, conexao, "Gatinha", 1)
 def remove(cursor, conexao, id):
     #delete
     cursor.execute("DELETE FROM clientes WHERE id=?;", (id,))
-    #isnt ideal update the ids of the remaining records
+    #isnt ideal to update the ids of the remaining records
     #update the ids of the remaining records
     cursor.execute("UPDATE clientes SET id = id - 1 WHERE id > ?;", (id,))
     #update the auto-increment sequence
@@ -66,42 +68,19 @@ def remove(cursor, conexao, id):
     conexao.commit()
 remove(cursor, conexao, 2)
 
-def listar(cursor):
+def get_cliente(cursor, id):
+    cursor.execute("SELECT * FROM clientes WHERE id=?;", (id,))
+    return cursor.fetchone() #select the row where cursor is pointing to
+busca = get_cliente(cursor, 2)
+print(tuple(busca))
+print(dict(busca),'\n')
+
+def list(cursor):
     cursor.execute("SELECT * FROM clientes;")
     return cursor.fetchall()
-clientes = listar(cursor)
+clientes = list(cursor)
 for cliente in clientes:
     print(dict(cliente))
-
-
-# def criar_tabela(conexao, cursor):
-#     cursor.execute(
-#         "CREATE TABLE clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(100), email VARCHAR(150))"
-#     )
-#     conexao.commit()
-
-
-# def inserir_registro(conexao, cursor, nome, email):
-#     data = (nome, email)
-#     cursor.execute("INSERT INTO clientes (nome, email) VALUES (?,?);", data)
-#     conexao.commit()
-
-
-# def atualizar_registro(conexao, cursor, nome, email, id):
-#     data = (nome, email, id)
-#     cursor.execute("UPDATE clientes SET nome=?, email=? WHERE id=?;", data)
-#     conexao.commit()
-
-
-# def excluir_registro(conexao, cursor, id):
-#     data = (id,)
-#     cursor.execute("DELETE FROM clientes WHERE id=?;", data)
-#     conexao.commit()
-
-
-# def inserir_muitos(conexao, cursor, dados):
-#     cursor.executemany("INSERT INTO clientes (nome, email) VALUES (?,?)", dados)
-#     conexao.commit()
 
 
 # def recuperar_cliente(cursor, id):
@@ -109,11 +88,11 @@ for cliente in clientes:
 #     return cursor.fetchone()
 
 
-# def listar(cursor):
+# def list(cursor):
 #     return cursor.execute("SELECT * FROM clientes ORDER BY nome DESC;")
 
 
-# clientes = listar(cursor)
+# clientes = list(cursor)
 # for cliente in clientes:
 #     print(dict(cliente))
 
